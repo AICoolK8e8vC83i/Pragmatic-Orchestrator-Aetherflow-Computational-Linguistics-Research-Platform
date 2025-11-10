@@ -1,0 +1,176 @@
+"""
+Agent_DiscourseAnalyzer: RST analysis for meeting transcripts
+Theory: Rhetorical Structure Theory (Mann & Thompson, 1988)
+Model: Kimi K2 Thinking
+"""
+
+import os
+import json
+from openai import OpenAI
+from dotenv import load_dotenv
+
+load_dotenv()
+
+class Agent_DiscourseAnalyzer:
+    """
+    Analyzes meeting transcripts for coherence relations.
+    Theory: Rhetorical Structure Theory (RST)
+    """
+    
+    def __init__(self):
+        # Initialize exactly like test notebook
+        api_key = os.getenv("MOONSHOT_API_KEY")
+        if not api_key:
+            raise ValueError("MOONSHOT_API_KEY not found in environment variables")
+        
+        self.client = OpenAI(
+            api_key=api_key,
+            base_url="https://api.moonshot.ai/v1"
+        )
+        self.model = "kimi-k2-thinking"
+        self.system_prompt = """You are a discourse analyst implementing Rhetorical Structure Theory (RST).
+
+Theory: Mann & Thompson (1988) - RST relations (Elaboration, Contrast, Concession, etc.)
+
+Task: Analyze transcripts for RST relations and coherence structure.
+
+Output: JSON with {
+    "rst_relations": [{"type": "...", "span": "...", "nucleus": "...", "satellite": "..."}],
+    "coherence_score": float,
+    "analysis": "..."
+}"""
+    
+    def process(self, query: str, context: list = None):
+        """Analyze discourse structure using RST."""
+        print(f"🏷️  Agent Badge: Discourse Analyzer (RST - Mann & Thompson 1988)")
+        # Build query with system prompt inline (like test notebook pattern)
+        full_query = f"{self.system_prompt}\n\nAnalyze this transcript for RST relations:\n\n{query}"
+        
+        # Use simple messages array like test notebook - NO system role, just user
+        messages = [{"role": "user", "content": full_query}]
+        
+        print(f"🔄 [Kimi K2 Thinking] Analyzing discourse structure...")
+        print(f"   🤖 Model: Kimi K2 Thinking (Moonshot AI)")
+        print(f"   Query length: {len(full_query)} chars")
+        
+        try:
+            # Call exactly like test notebook - NO timeout parameter
+            # Remove max_tokens to allow full response (Kimi K2 can handle it)
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                temperature=0.3
+                # max_tokens removed - let Kimi K2 generate full response
+            )
+            
+            # Debug response structure
+            if not response:
+                print(f"❌ [Kimi K2] Response is None")
+                return {"error": "Response is None", "analysis": "", "ai_success": False}
+            
+            if not hasattr(response, 'choices') or not response.choices:
+                print(f"❌ [Kimi K2] No choices in response")
+                print(f"   Response type: {type(response)}")
+                print(f"   Response: {response}")
+                return {"error": "No choices in response", "analysis": "", "ai_success": False}
+            
+            # Access content EXACTLY like test notebook - simple direct access
+            message = response.choices[0].message
+            content = message.content
+            
+            # Check finish_reason for debugging
+            finish_reason = response.choices[0].finish_reason if hasattr(response.choices[0], 'finish_reason') else None
+            if finish_reason:
+                print(f"📊 [Kimi K2] Finish reason: {finish_reason}")
+                if finish_reason == "length":
+                    print(f"   ⚠️  Response was truncated (max_tokens reached), but content exists")
+            
+            # If content is None or empty, that's an error
+            # BUT: finish_reason: length means truncated, NOT empty - use the truncated content!
+            if content is None:
+                print(f"❌ [Kimi K2] Content is None")
+                print(f"   Finish reason: {finish_reason}")
+                return {"error": "Content is None", "analysis": "", "ai_success": False}
+            
+            # Empty string is also an error (but length means truncated, which is OK)
+            if content == "":
+                print(f"❌ [Kimi K2] Content is empty string")
+                print(f"   Finish reason: {finish_reason}")
+                return {"error": "Empty response", "analysis": "", "ai_success": False}
+            
+            print(f"✅ [Kimi K2] AI call successful, response length: {len(content)} chars")
+            print(f"   Content: {content}")
+            
+            # Strip markdown code blocks and extract JSON (handle truncated JSON)
+            content_cleaned = content.strip()
+            
+            # Remove markdown code blocks
+            if content_cleaned.startswith("```json"):
+                content_cleaned = content_cleaned[7:]
+            elif content_cleaned.startswith("```"):
+                content_cleaned = content_cleaned[3:]
+            if content_cleaned.endswith("```"):
+                content_cleaned = content_cleaned[:-3]
+            content_cleaned = content_cleaned.strip()
+            
+            # Try to extract and parse JSON (handle truncated JSON)
+            try:
+                # Find JSON block (first { to matching })
+                first_brace = content_cleaned.find("{")
+                if first_brace >= 0:
+                    # Find matching closing brace
+                    brace_count = 0
+                    last_brace = -1
+                    for i in range(first_brace, len(content_cleaned)):
+                        if content_cleaned[i] == "{":
+                            brace_count += 1
+                        elif content_cleaned[i] == "}":
+                            brace_count -= 1
+                            if brace_count == 0:
+                                last_brace = i
+                                break
+                    
+                    if last_brace > first_brace:
+                        # Extract just the JSON part
+                        json_only = content_cleaned[first_brace:last_brace + 1]
+                        parsed = json.loads(json_only)
+                        parsed["ai_success"] = True
+                        print(f"✅ [Kimi K2] Successfully extracted and parsed JSON")
+                        return parsed
+                    else:
+                        # JSON is truncated - try to repair it
+                        print(f"⚠️  [Kimi K2] JSON appears truncated, attempting repair...")
+                        json_partial = content_cleaned[first_brace:]
+                        # Try to close it
+                        if json_partial.rstrip().endswith('"') and not json_partial.rstrip().endswith('",'):
+                            json_repaired = json_partial.rstrip().rstrip('"') + '"}'
+                        else:
+                            json_repaired = json_partial + '}'
+                        
+                        try:
+                            parsed = json.loads(json_repaired)
+                            parsed["ai_success"] = True
+                            print(f"✅ [Kimi K2] Successfully repaired and parsed truncated JSON")
+                            return parsed
+                        except:
+                            pass
+                
+                # Fallback: try parsing the whole cleaned content
+                parsed = json.loads(content_cleaned)
+                parsed["ai_success"] = True
+                return parsed
+            except json.JSONDecodeError as je:
+                print(f"⚠️  [Kimi K2] JSON parse failed: {je}, using plain text")
+                print(f"   Cleaned content: {content_cleaned}")
+                return {
+                    "rst_relations": [],
+                    "coherence_score": 0.5,
+                    "analysis": content_cleaned if content_cleaned else content,
+                    "ai_success": True
+                }
+        except Exception as e:
+            print(f"❌ [Kimi K2] AI call failed: {e}")
+            import traceback
+            traceback.print_exc()
+            return {"error": str(e), "analysis": "", "ai_success": False}
+
