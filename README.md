@@ -1,4 +1,7 @@
-# Pragmatic Orchestrator: Computational Linguistics Research Platform
+# Pragmatic Orchestrator Aetherflow: Computational Linguistics Research Platform
+
+## **YouTube Demo**
+[![Pragmatic Orchestrator Aetherflow]([https://img.youtube.com/vi/T-D1KVIuvjA/maxresdefault.jpg)](https://youtu.be/T-D1KVIuvjA](https://youtu.be/4DHdtFbrIS8?si=RQLr4ygHOf5anPaB))
 
 ## The Question That Refuses to Die
 
@@ -114,7 +117,7 @@ How to Run It Yourself
 bash
 Copy
 # Clone the research platform
-git clone https://github.com/yourusername/pragmatic-orchestrator
+git clone https://github.com/AICoolK8e8vC83i/Pragmatic-Orchestrator-Aetherflow-Computational-Linguistics-Research-Platform
 cd pragmatic-orchestrator
 
 # Install dependencies (we lock versions for reproducible pragmatics research)
@@ -142,10 +145,10 @@ If you use this platform for computational pragmatics research:
 bibtex
 Copy
 @software{pragmatic_orchestrator_2024,
-  author = {[Your Name]},
+  author = {Kevlar Chi},
   title = {Pragmatic Orchestrator: A Multi-Agent Platform for Computational Pragmatics},
   url = {https://github.com/yourusername/pragmatic-orchestrator},
-  year = {2024},
+  year = {2025},
   note = {Implements Searle (1969), Grice (1975), Myers-Scotton (1993), Montague (1973), Fillmore (1976)}
 }
 Status: Active research platform. Not a product. Not a service. A hypothesis that theory-driven AI routing can model pragmatic inference. 
