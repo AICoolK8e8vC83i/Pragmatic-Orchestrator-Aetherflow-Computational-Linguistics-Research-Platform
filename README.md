@@ -1,8 +1,7 @@
 # Pragmatic Orchestrator Aetherflow: Computational Linguistics Research Platform
 
 ## **YouTube Demo**
-[![Pragmatic Orchestrator Aetherflow]([https://img.youtube.com/vi/T-D1KVIuvjA/maxresdefault.jpg)](https://youtu.be/T-D1KVIuvjA](https://youtu.be/4DHdtFbrIS8?si=RQLr4ygHOf5anPaB))
-
+[![Pragmatic Orchestrator Aetherflow Demo Video](https://img.youtube.com/vi/4DHdtFbrIS8/0.jpg)](https://youtu.be/4DHdtFbrIS8?si=Ll0WLZUFEo_7_cGP)
 ## The Question That Refuses to Die
 
 *Can we computationally model the pragmatic layer of language?*
